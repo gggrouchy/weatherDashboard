@@ -1,38 +1,40 @@
-import { Router, type Request, type Response } from 'express';
+import { Router, Request, Response } from 'express';
+import WeatherService from '../../service/weatherService';
+import HistoryService from '../../service/historyService';
+
 const router = Router();
 
-import WeatherService from '../../services/WeatherService.ts';
-import HistoryService from './../../services/HistoryService.ts';
-
-router.post('/', async (req: Request, res: Response) => {
+router.post('/weather', async (req: Request, res: Response) => {
+  const { cityName } = req.body;
+  if (!cityName) {
+      return res.status(400).send({ error: 'City name is required' });
+  }
   try {
-    const cityName = req.body.cityName; // Ensure this matches the sent data
-    const newCity = await HistoryService.addCity(cityName);
-    const weatherData = await WeatherService.getWeatherForCity(cityName);
-    res.json([newCity, ...weatherData]);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve weather data' });
+      const newCity = await HistoryService.addCity(cityName);
+      const weatherData = await WeatherService.getWeatherForCity(cityName);
+      return res.json({ city: newCity, weather: weatherData });
+  } catch (err) {
+      return res.status(500).send({ error: 'Error fetching weather data' });
   }
 });
 
-router.get('/history', async (req: Request, res: Response) => {
+router.get('/history', async (_req: Request, res: Response) => {
   try {
     const cities = await HistoryService.getCities();
     res.json(cities);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve search history' });
+  } catch (err) {
+    res.status(500).send({ error: 'Error fetching city history' });
   }
 });
 
 router.delete('/history/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
   try {
-    const cityId = req.params.id;
-    await HistoryService.removeCity(cityId);
-    res.json({ message: 'City removed from history' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to remove city' });
+    await HistoryService.removeCity(id);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).send({ error: 'Error deleting city from history' });
   }
 });
 
 export default router;
-

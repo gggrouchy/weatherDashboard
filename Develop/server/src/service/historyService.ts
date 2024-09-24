@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { promises as fs } from 'fs'; 
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid'; // Use to create unique ids
 
@@ -38,7 +38,7 @@ class HistoryService {
 
   async addCity(cityName: string) {
     const cities = await this.read();
-    const newCity = new City(cityName, uuidv4()); // Assign a unique ID to each city
+    const newCity = new City(cityName, uuidv4());
     cities.push(newCity);
     await this.write(cities);
     return newCity;
@@ -52,6 +52,7 @@ class HistoryService {
 }
 
 export default new HistoryService();
+
 
 
 // TODO: Define a City class with name and id properties

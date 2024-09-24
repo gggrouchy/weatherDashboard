@@ -1,60 +1,26 @@
-
-import dotenv from 'dotenv'; 
 import axios from 'axios';
-
-dotenv.config();
-
-interface Coordinates {
-  lat: number;
-  lon: number;
-}
-
-class Weather {
-  constructor(
-    public city: string,
-    public temp: number,
-    public windSpeed: number,
-    public humidity: number,
-    public icon: string
-  ) {}
-}
 
 class WeatherService {
   private baseURL: string = 'https://api.openweathermap.org/data/2.5';
-  private apiKey = process.env.API_KEY;
-  
-  private async fetchLocationData(query: string): Promise<Coordinates> {
-    const response = await axios.get(`${this.baseURL}/weather?q=${query}&appid=${this.apiKey}&units=imperial`);
-    return response.data.coord;
-  }
+  private apiKey: string = 'YOUR_API_KEY'; // Replace with your actual OpenWeather API key
 
-  private async fetchWeatherData(coordinates: Coordinates): Promise<any> {
-    const response = await axios.get(`${this.baseURL}/onecall?lat=${coordinates.lat}&lon=${coordinates.lon}&exclude=minutely,hourly&appid=${this.apiKey}&units=imperial`);
-    return response.data;
-  }
-
-  private parseCurrentWeather(response: any): Weather {
-    const { name, main, wind, weather } = response;
-    return new Weather(name, main.temp, wind.speed, main.humidity, weather[0].icon);
-  }
-
-  async getWeatherForCity(city: string): Promise<Coordinates | null> {
+  async getWeatherForCity(cityName: string) {
     try {
-      const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${this.apiKey}`);
-      
-      // Explicitly define the expected response structure
-      const data = response.data as { coord: Coordinates };
-      
-      return data.coord;
+      const response = await axios.get(`${this.baseURL}/weather`, {
+        params: {
+          q: cityName,
+          appid: this.apiKey,
+        },
+      });
+      return response.data;
     } catch (error) {
-      console.error('Error fetching weather data:', error);
-      return null;
+      console.error(`Error fetching weather data: ${error}`);
+      throw error;
     }
   }
 }
 
 export default new WeatherService();
-
 
 
 // TODO: Define an interface for the Coordinates object
